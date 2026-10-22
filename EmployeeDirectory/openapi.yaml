@@ -1,0 +1,330 @@
+openapi: 3.0.3
+info:
+  title: Employee Directory API
+  version: 1.0.0
+  description: Internal API for managing employees, departments, and skills.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Departments
+  - name: Skills
+  - name: Employees
+paths:
+  /api/departments:
+    get:
+      tags: [Departments]
+      summary: List departments with computed head counts
+      responses:
+        '200':
+          description: Departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Department' }
+    post:
+      tags: [Departments]
+      summary: Create a department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DepartmentRequest' }
+      responses:
+        '201':
+          description: Department created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Department' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/departments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Departments]
+      summary: Get a department
+      responses:
+        '200':
+          description: Department
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Department' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Departments]
+      summary: Update a department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DepartmentRequest' }
+      responses:
+        '200':
+          description: Department updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Department' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Departments]
+      summary: Delete an empty department
+      responses:
+        '204': { description: Department deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/departments/{id}/employees:
+    get:
+      tags: [Departments, Employees]
+      summary: List employees in a department
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Page of employees
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmployeePage' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/skills:
+    get:
+      tags: [Skills]
+      summary: List skills
+      responses:
+        '200':
+          description: Skills
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Skill' }
+    post:
+      tags: [Skills]
+      summary: Create a skill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SkillRequest' }
+      responses:
+        '201':
+          description: Skill created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Skill' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/employees:
+    get:
+      tags: [Employees]
+      summary: List employees, optionally filtered by department
+      parameters:
+        - name: departmentId
+          in: query
+          schema: { type: integer, format: int64 }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Page of employees
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmployeePage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Employees]
+      summary: Create an employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmployeeRequest' }
+      responses:
+        '201':
+          description: Employee created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/employees/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Employees]
+      summary: Get an employee with skills
+      responses:
+        '200':
+          description: Employee
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Employees]
+      summary: Update an employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmployeeRequest' }
+      responses:
+        '200':
+          description: Employee updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Employees]
+      summary: Delete an employee
+      responses:
+        '204': { description: Employee deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/employees/{id}/skills/{sid}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+      - name: sid
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+    post:
+      tags: [Employees]
+      summary: Add a skill to an employee
+      responses:
+        '200':
+          description: Employee with updated skills
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Employees]
+      summary: Remove a skill from an employee
+      responses:
+        '200':
+          description: Employee with updated skills
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 0, default: 0 }
+    Size:
+      name: size
+      in: query
+      description: Defaults to pagination.default-page-size; maximum 200.
+      schema: { type: integer, minimum: 1, maximum: 200 }
+    Sort:
+      name: sort
+      in: query
+      schema: { type: string, enum: [name, email, joiningDate, designation], default: name }
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Conflict:
+      description: Duplicate value or operation conflicts with existing data
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+  schemas:
+    DepartmentRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        location: { type: string, nullable: true }
+    Department:
+      allOf:
+        - $ref: '#/components/schemas/DepartmentRequest'
+        - type: object
+          properties:
+            id: { type: integer, format: int64 }
+            headCount: { type: integer }
+    SkillRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        category: { type: string, nullable: true }
+    Skill:
+      allOf:
+        - $ref: '#/components/schemas/SkillRequest'
+        - type: object
+          properties:
+            id: { type: integer, format: int64 }
+    EmployeeRequest:
+      type: object
+      required: [name, email, joiningDate, departmentId]
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        designation: { type: string, nullable: true }
+        joiningDate: { type: string, format: date }
+        departmentId: { type: integer, format: int64 }
+        skillIds:
+          type: array
+          items: { type: integer, format: int64 }
+    Employee:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        email: { type: string, format: email }
+        designation: { type: string, nullable: true }
+        joiningDate: { type: string, format: date }
+        departmentId: { type: integer, format: int64 }
+        departmentName: { type: string }
+        skills:
+          type: array
+          items: { $ref: '#/components/schemas/Skill' }
+    EmployeePage:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/Employee' }
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+        number: { type: integer }
+        size: { type: integer }
+    ApiError:
+      type: object
+      properties:
+        timestamp: { type: string, format: date-time }
+        status: { type: integer }
+        error: { type: string }
+        message: { type: string }
+        fieldErrors:
+          type: object
+          additionalProperties: { type: string }
